@@ -1,9 +1,4 @@
-import {
-  FileIcon,
-  FolderArchiveIcon,
-  FolderIcon,
-  PlusIcon,
-} from "lucide-react";
+import { FileIcon, FolderIcon, PlusIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +6,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { useState, type ComponentPropsWithoutRef, type FormEvent } from "react";
+import {
+  useState,
+  type ChangeEvent,
+  type ComponentPropsWithoutRef,
+  type FormEvent,
+} from "react";
 import { callAPI } from "@/config/api";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -29,14 +29,16 @@ export default function AddFileButton(props: AddFileButtonProps) {
   const [isCreateFileDialogOpen, setIsCreateFileDialogOpen] = useState(false);
   const [createFolderFormData, setCreateFolderFormData] = useState({
     name: "New folder",
-    extension: "",
     type: "FOLDER",
   });
   const [createFileFormData, setCreateFileFormData] = useState({
     name: "",
     extension: "",
     type: "FILE",
+    base64: "",
+    file_size: 0,
   });
+  const [base64String, setBase64String] = useState("");
 
   async function handleCreateFolderSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,8 +56,30 @@ export default function AddFileButton(props: AddFileButtonProps) {
       method: "POST",
       data: { ...createFileFormData, parent_id: props.parentFolderId },
     });
+    console.log(response);
     if (props.onSubmitFinished) props.onSubmitFinished();
   }
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = (event.target.files as FileList)[0];
+    const nameOnly =
+      file.name.substring(0, file.name.lastIndexOf(".")) ?? file.name;
+    const extension = "." + file.name?.split(".").pop()?.toLowerCase();
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCreateFileFormData({
+          ...createFileFormData,
+          name: nameOnly,
+          extension: extension as string,
+          base64: reader.result as string,
+          file_size: file.size,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <Popover>
@@ -132,7 +156,7 @@ export default function AddFileButton(props: AddFileButtonProps) {
                 <div className="flex flex-col gap-2">
                   <Label>Name</Label>
                   <Input
-                    defaultValue={createFileFormData.name}
+                    value={createFileFormData.name}
                     onChange={(e) =>
                       setCreateFileFormData({
                         ...createFileFormData,
@@ -141,16 +165,7 @@ export default function AddFileButton(props: AddFileButtonProps) {
                     }
                   />
                 </div>
-                <Input
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) =>
-                    setCreateFileFormData({
-                      ...createFileFormData,
-                      extension: e.target.value,
-                    })
-                  }
-                />
+                <Input type="file" onChange={handleFileChange} />
                 <Button onClick={() => setIsCreateFileDialogOpen(false)}>
                   Create
                 </Button>
