@@ -23,3 +23,5 @@ export async function callAPI<T>({
     throw error;
   }
 }
+
+export const API_URL = import.meta.env.VITE_API_URL;
