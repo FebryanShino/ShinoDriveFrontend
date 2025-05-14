@@ -14,11 +14,17 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "./ui/sidebar";
-import type { FileItem } from "@/types";
-import { Link } from "react-router-dom";
-import { FileIcon, FolderIcon, HomeIcon } from "lucide-react";
-import { API_URL } from "@/config/api";
-import AddFileButton from "./AddFileButton";
+import type { FileItem, User } from "@/types";
+import { Link, useNavigate } from "react-router-dom";
+import { ChevronUp, FileIcon, FolderIcon, HomeIcon, User2 } from "lucide-react";
+import { API_URL, callAPI } from "@/config/api";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { deleteAccessToken, getAccessToken } from "@/config/api/accessToken";
 
 function RenderSidebarSubItem({
   item,
@@ -55,7 +61,11 @@ function RenderSidebarItem({
     <SidebarMenuItem key={item.id}>
       <SidebarMenuButton asChild isActive={item.id === activeId}>
         <Link
-          to={(item.type === "folder" ? "/" : `${API_URL}/file/`) + item.id}
+          to={
+            item.parent_id
+              ? (item.type === "folder" ? "/" : `${API_URL}/file/`) + item.id
+              : "/"
+          }
         >
           {item.type === "folder" ? <FolderIcon /> : <FileIcon />}
           <span className="truncate w-full">
@@ -91,9 +101,20 @@ function RenderSidebarItem({
 interface AppSidebarProps extends ComponentPropsWithoutRef<"div"> {
   items?: FileItem[];
   activeItemId: string;
+  user: User;
 }
 
 export default function AppSidebar(props: AppSidebarProps) {
+  const navigate = useNavigate();
+  async function handleLogout() {
+    await callAPI({
+      url: `${API_URL}/auth/logout`,
+      method: "POST",
+      authToken: getAccessToken() as string,
+    });
+    deleteAccessToken();
+    navigate("/login");
+  }
   return (
     <Sidebar>
       <SidebarHeader />
@@ -141,7 +162,29 @@ export default function AppSidebar(props: AppSidebarProps) {
         </SidebarGroup>
         <SidebarGroup />
       </SidebarContent>
-      <SidebarFooter />
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton>
+                  <User2 /> {props.user.username}
+                  <ChevronUp className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="top"
+                className="w-[--radix-popper-anchor-width]"
+              >
+                <DropdownMenuItem onClick={handleLogout}>
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
