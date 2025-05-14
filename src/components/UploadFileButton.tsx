@@ -21,12 +21,11 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "./ui/table";
 import type { FileItem } from "@/types";
 import { cn } from "@/lib/utils";
+import { getAccessToken } from "@/config/api/accessToken";
 
 interface UploadFileButtonProps {
   triggerButton: ReactNode;
@@ -48,10 +47,11 @@ export default function UploadFileButton(props: UploadFileButtonProps) {
 
   async function handleCreateFileSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const response = await callAPI({
+    await callAPI({
       url: `${API_URL}/create`,
       method: "POST",
       data: { ...createFileFormData, parent_id: props.parentFolderId },
+      authToken: getAccessToken() as string,
     });
     setCreateFileFormData({
       name: "",
@@ -147,7 +147,7 @@ export default function UploadFileButton(props: UploadFileButtonProps) {
                   <Label>Change Name</Label>
                   <Input
                     className={cn(
-                      props.filesOnTheSameDir.find(
+                      props.filesOnTheSameDir?.find(
                         (item) => item.name === createFileFormData.name
                       )
                         ? "border-red-500"
