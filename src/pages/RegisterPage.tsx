@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { API_URL, callAPI } from "@/config/api";
 import { setAccessToken } from "@/config/api/accessToken";
 import type { User } from "@/types";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   username: z.string().min(8),
@@ -103,6 +103,20 @@ export default function RegisterPage() {
                   </FormItem>
                 )}
               />
+              <FormDescription>
+                <span>Already have an a account?</span>
+                <Link to="/login">
+                  {" "}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="link"
+                    className="p-0"
+                  >
+                    Login
+                  </Button>
+                </Link>
+              </FormDescription>
               <Button type="submit" size="lg">
                 Submit
               </Button>

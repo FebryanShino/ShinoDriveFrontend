@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,7 +16,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { API_URL, callAPI } from "@/config/api";
 import { setAccessToken } from "@/config/api/accessToken";
 import type { User } from "@/types";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -84,7 +85,23 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              <FormDescription>
+                <span>New to here?</span>
+                <Link to="/register">
+                  {" "}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="link"
+                    className="p-0"
+                  >
+                    Register
+                  </Button>
+                </Link>
+              </FormDescription>
+              <Button type="submit" size="lg" className="cursor-pointer">
+                Submit
+              </Button>
             </form>
           </Form>
         </CardContent>
