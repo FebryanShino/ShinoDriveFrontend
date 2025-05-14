@@ -10,3 +10,9 @@ export interface FileItem {
   children?: this[];
   parent?: this;
 }
+
+export interface User {
+  id: UUID;
+  username: string;
+  email: string;
+}
