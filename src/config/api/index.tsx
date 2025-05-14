@@ -2,25 +2,42 @@ interface CallAPIProps {
   url: string;
   method: "GET" | "POST";
   data?: any;
+  authToken?: string;
 }
 
 export async function callAPI<T>({
   url,
   method,
   data,
+  authToken,
 }: CallAPIProps): Promise<T> {
+  let headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (authToken) headers = { ...headers, Authorization: `Bearer ${authToken}` };
+
   const response = await fetch(url, {
     method: method,
     body: JSON.stringify(data),
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headers,
   });
 
+  if (!response.ok) {
+    throw {
+      status: response.status,
+      body: response,
+    };
+  }
+
   try {
-    return await response.json();
+    const result: T = await response.json();
+    return result;
   } catch (error) {
-    throw error;
+    throw {
+      status: response.status,
+      message: "Failed to parse JSON response",
+      error,
+    };
   }
 }
 
