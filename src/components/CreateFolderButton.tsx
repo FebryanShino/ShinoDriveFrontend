@@ -1,4 +1,4 @@
-import React, { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import { API_URL, callAPI } from "@/config/api";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
+import { getAccessToken } from "@/config/api/accessToken";
 
 interface CreateFolderButtonProps {
   triggerButton: ReactNode;
@@ -27,10 +28,11 @@ export default function CreateFolderButton(props: CreateFolderButtonProps) {
 
   async function handleCreateFolderSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const response = await callAPI({
+    await callAPI({
       url: `${API_URL}/create`,
       method: "POST",
       data: { ...createFolderFormData, parent_id: props.parentFolderId },
+      authToken: getAccessToken() as string,
     });
     if (props.onSubmitFinished) props.onSubmitFinished();
   }
