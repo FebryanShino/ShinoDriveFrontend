@@ -1,5 +1,7 @@
 import AddFileButton from "@/components/AddFileButton";
 import AppSidebar from "@/components/AppSidebar";
+import FileCard from "@/components/file-item-card/FileCard";
+import FolderCard from "@/components/file-item-card/FolderCard";
 import ResponsiveGridWrapper from "@/components/ResponsiveGridWrapper";
 import {
   Breadcrumb,
@@ -10,8 +12,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { API_URL, callAPI } from "@/config/api";
@@ -19,19 +19,14 @@ import { getAccessToken } from "@/config/api/accessToken";
 import type { FileItem, User } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { FolderIcon, HomeIcon, SearchIcon } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 
 export default function Homepage({ user }: { user: User }) {
   const [search, setSearch] = useState("");
-  function hashToRGB(str: string) {
-    const rgb = [];
-    for (let i = 0; i < (str.length < 4 ? str.length : 3); i++) {
-      const color = Math.round(((str.charCodeAt(i) - 97) / 25) * 135 + 120);
-      rgb.push(color);
-    }
-    return rgb;
-  }
+  const [activeFileItem, setActiveFileItem] = useState<FileItem>();
+  const [selectedFileItems, setSelectedFileItems] = useState<FileItem[]>([]);
+  const [multipleSelectMode, setMultipleSelectMode] = useState(false);
   const { id } = useParams();
   const { data, refetch } = useQuery<FileItem>({
     queryKey: ["items", id],
@@ -66,6 +61,27 @@ export default function Homepage({ user }: { user: User }) {
     console.log(data);
     refetch();
   }
+
+  useEffect(() => {
+    setActiveFileItem(undefined);
+    setSelectedFileItems([]);
+  }, [data]);
+
+  useEffect(() => {
+    function keyDownHandler(event: KeyboardEvent) {
+      if (event.ctrlKey) setMultipleSelectMode(true);
+    }
+    function keyUpHandler(event: KeyboardEvent) {
+      if (event.key === "Control") setMultipleSelectMode(false);
+    }
+    window.addEventListener("keydown", keyDownHandler);
+    window.addEventListener("keyup", keyUpHandler);
+
+    return () => {
+      window.removeEventListener("keydown", keyDownHandler);
+      window.removeEventListener("keyup", keyUpHandler);
+    };
+  }, []);
 
   return (
     <SidebarProvider className="w-full h-[100svh]">
@@ -136,19 +152,42 @@ export default function Homepage({ user }: { user: User }) {
             />
           </div>
           <div className="flex"></div>
-          <div className="w-full h-full bg-secondary rounded-2xl p-3 flex flex-col gap-10 overflow-y-auto">
+          <div
+            className="w-full h-full bg-secondary rounded-2xl p-3 flex flex-col gap-10 overflow-y-auto"
+            onClick={() => {
+              setActiveFileItem(undefined);
+              setSelectedFileItems([]);
+            }}
+          >
             <ResponsiveGridWrapper minSize="15rem">
               {data?.children &&
                 data.children
                   .filter((item) => item.type === "folder")
                   .map((item) => (
-                    <Link to={`/${item.id}`} key={item.id}>
-                      <Card className="w-full">
-                        <CardHeader>
-                          <CardTitle>{item.name}</CardTitle>
-                        </CardHeader>
-                      </Card>
-                    </Link>
+                    <FolderCard
+                      fileItem={item}
+                      multipleSelectMode={multipleSelectMode}
+                      isActive={activeFileItem?.id === item.id}
+                      isSelected={
+                        !!selectedFileItems.find((file) => file.id === item.id)
+                      }
+                      onClick={(isSelected) => {
+                        const newSelectedFileItems = [
+                          ...selectedFileItems.filter(
+                            (element) => element.id !== item.id,
+                          ),
+                        ];
+                        if (!isSelected && multipleSelectMode) {
+                          newSelectedFileItems.push(item);
+                        }
+                        setSelectedFileItems(newSelectedFileItems);
+
+                        if (!multipleSelectMode) {
+                          setSelectedFileItems([item]);
+                        }
+                        setActiveFileItem(item);
+                      }}
+                    />
                   ))}
             </ResponsiveGridWrapper>
             <ResponsiveGridWrapper minSize="15rem">
@@ -156,26 +195,30 @@ export default function Homepage({ user }: { user: User }) {
                 data.children
                   .filter((item) => item.type === "file")
                   .map((item) => (
-                    <Link to={`${API_URL}/file/${item.id}`} key={item.id}>
-                      <Card className="w-full aspect-[4/3]">
-                        <CardHeader>
-                          <CardTitle className="truncate">
-                            {item.name}
-                            {item.extension}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="px-3 h-full">
-                          <div
-                            className=" w-full h-full rounded flex justify-center items-center"
-                            style={{
-                              backgroundColor: `rgb(${hashToRGB(item.extension?.replace(".", "") as string).join(",")})`,
-                            }}
-                          >
-                            <h1 className="text-5xl">{item.extension}</h1>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
+                    <FileCard
+                      multipleSelectMode={multipleSelectMode}
+                      fileItem={item}
+                      isActive={activeFileItem?.id === item.id}
+                      isSelected={
+                        !!selectedFileItems.find((file) => file.id === item.id)
+                      }
+                      onClick={(isSelected) => {
+                        const newSelectedFileItems = [
+                          ...selectedFileItems.filter(
+                            (element) => element.id !== item.id,
+                          ),
+                        ];
+                        if (!isSelected && multipleSelectMode) {
+                          newSelectedFileItems.push(item);
+                        }
+                        setSelectedFileItems(newSelectedFileItems);
+
+                        if (!multipleSelectMode) {
+                          setSelectedFileItems([item]);
+                        }
+                        setActiveFileItem(item);
+                      }}
+                    />
                   ))}
             </ResponsiveGridWrapper>
           </div>
