@@ -1,4 +1,15 @@
-import type { ComponentPropsWithoutRef } from "react";
+import { API_URL, callAPI } from "@/config/api";
+import { deleteAccessToken, getAccessToken } from "@/config/api/accessToken";
+import type { FileItem, User } from "@/types";
+import { ChevronUp, FileIcon, FolderIcon, HomeIcon, User2 } from "lucide-react";
+import { type ComponentPropsWithoutRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -14,17 +25,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "./ui/sidebar";
-import type { FileItem, User } from "@/types";
-import { Link, useNavigate } from "react-router-dom";
-import { ChevronUp, FileIcon, FolderIcon, HomeIcon, User2 } from "lucide-react";
-import { API_URL, callAPI } from "@/config/api";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { deleteAccessToken, getAccessToken } from "@/config/api/accessToken";
 
 function RenderSidebarSubItem({
   item,
@@ -117,8 +117,11 @@ export default function AppSidebar(props: AppSidebarProps) {
   }
   return (
     <Sidebar>
-      <SidebarHeader>
-        <h1>Shino Drive</h1>
+      <SidebarHeader className="flex justify-center">
+        <div
+          className="mx-auto w-[50%]  bg-cover bg-center aspect-video"
+          style={{ backgroundImage: "url(/logo.png)" }}
+        ></div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
