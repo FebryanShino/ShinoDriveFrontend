@@ -1,10 +1,10 @@
+import type { FileItem } from "@/types";
 import { FileIcon, FolderIcon, PlusIcon } from "lucide-react";
 import { type ComponentPropsWithoutRef } from "react";
+import CreateFolderButton from "./CreateFolderButton";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import UploadFileButton from "./UploadFileButton";
-import CreateFolderButton from "./CreateFolderButton";
-import type { FileItem } from "@/types";
 
 interface AddFileButtonProps extends ComponentPropsWithoutRef<"div"> {
   parentFolderId: string;
