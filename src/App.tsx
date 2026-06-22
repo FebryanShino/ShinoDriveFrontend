@@ -1,12 +1,13 @@
-import { Route, Routes } from "react-router-dom";
-import Homepage from "./pages/Homepage";
-import { ThemeProvider } from "./components/theme-provider";
-import LoginPage from "./pages/LoginPage";
-import ProtectedRoute from "./components/ProtectedRoute";
 import { useState } from "react";
-import type { User } from "./types";
-import RegisterPage from "./pages/RegisterPage";
+import { Route, Routes } from "react-router-dom";
 import GuestRoute from "./components/GuestRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { ThemeProvider } from "./components/theme-provider";
+import FileItemDetailPage from "./pages/FileItemDetailPage";
+import Homepage from "./pages/Homepage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import type { User } from "./types";
 
 function App() {
   const [user, setUser] = useState<User>();
@@ -46,6 +47,16 @@ function App() {
               onCheckSuccess={(authorizedUser) => setUser(authorizedUser)}
             >
               <Homepage user={user as User} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/:id/detail"
+          element={
+            <ProtectedRoute
+              onCheckSuccess={(authorizedUser) => setUser(authorizedUser)}
+            >
+              <FileItemDetailPage />
             </ProtectedRoute>
           }
         />
