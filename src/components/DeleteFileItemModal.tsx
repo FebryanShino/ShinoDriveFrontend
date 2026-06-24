@@ -63,7 +63,7 @@ export default function DeleteFileItemModal(
         </DialogHeader>
         <p>Are you sure going to delete:</p>
         <Table>
-          <TableCaption>A list of your recent invoices.</TableCaption>
+          <TableCaption>This action cannot be undone.</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead>No.</TableHead>
