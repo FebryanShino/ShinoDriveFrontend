@@ -1,7 +1,9 @@
 import AddFileButton from "@/components/AddFileButton";
 import AppSidebar from "@/components/AppSidebar";
+import Empty from "@/components/Empty";
 import FileCard from "@/components/file-item-card/FileCard";
 import FolderCard from "@/components/file-item-card/FolderCard";
+import MoveFileItemPopover from "@/components/MoveFileItemPopover";
 import ResponsiveGridWrapper from "@/components/ResponsiveGridWrapper";
 import {
   Breadcrumb,
@@ -13,12 +15,29 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { API_URL, callAPI } from "@/config/api";
 import { getAccessToken } from "@/config/api/accessToken";
 import type { FileItem, User } from "@/types";
+import type { sortOptions } from "@/utils/file-item-utils";
 import { useQuery } from "@tanstack/react-query";
-import { FolderIcon, HomeIcon, SearchIcon } from "lucide-react";
+import {
+  ArrowDownAZIcon,
+  ArrowUpAZIcon,
+  FolderIcon,
+  FolderInputIcon,
+  HomeIcon,
+  PlusIcon,
+  SearchIcon,
+  XIcon,
+} from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -27,6 +46,10 @@ export default function Homepage({ user }: { user: User }) {
   const [activeFileItem, setActiveFileItem] = useState<FileItem>();
   const [selectedFileItems, setSelectedFileItems] = useState<FileItem[]>([]);
   const [multipleSelectMode, setMultipleSelectMode] = useState(false);
+  const [sortOption, setSortOption] = useState<sortOptions>({
+    sortBy: "name",
+    sortDirection: "ASC",
+  });
   const { id } = useParams();
   const { data, refetch } = useQuery<FileItem>({
     queryKey: ["items", id],
@@ -50,7 +73,7 @@ export default function Homepage({ user }: { user: User }) {
 
   function fetchFolder() {
     return callAPI<FileItem>({
-      url: `${API_URL}/${id ?? "root"}?search=${search}`,
+      url: `${API_URL}/item/${id ?? "root"}?search=${search}&sortBy=${sortOption.sortBy}&sortDirection=${sortOption.sortDirection}`,
       method: "GET",
       authToken: getAccessToken() as string,
     });
@@ -58,9 +81,12 @@ export default function Homepage({ user }: { user: User }) {
 
   function handleSearchSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log(data);
     refetch();
   }
+
+  useEffect(() => {
+    refetch();
+  }, [sortOption]);
 
   useEffect(() => {
     setActiveFileItem(undefined);
@@ -143,7 +169,13 @@ export default function Homepage({ user }: { user: User }) {
               </Button>
             </form>
             <AddFileButton
-              filesOnTheSameDir={data?.children as FileItem[]}
+              trigger={
+                <Button>
+                  <PlusIcon />
+                  Add
+                </Button>
+              }
+              itemsOnTheSameDir={data?.children as FileItem[]}
               parentFolderId={id as string}
               onSubmitFinished={() => {
                 refetch();
@@ -151,7 +183,85 @@ export default function Homepage({ user }: { user: User }) {
               }}
             />
           </div>
-          <div className="flex"></div>
+
+          <div className="flex w-full flex-col h-[7rem] gap-3">
+            <div className="flex">
+              <Select
+                value={sortOption.sortBy}
+                onValueChange={(
+                  value: "name" | "created_at" | "updated_at",
+                ) => {
+                  setSortOption({ ...sortOption, sortBy: value });
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Theme" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="created_at">Date created</SelectItem>
+                  <SelectItem value="updated_at">Date modified</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="link"
+                size="icon"
+                className="cursor-pointer"
+                onClick={() =>
+                  setSortOption({
+                    ...sortOption,
+                    sortDirection:
+                      sortOption.sortDirection === "ASC" ? "DESC" : "ASC",
+                  })
+                }
+              >
+                {sortOption.sortDirection === "ASC" ? (
+                  <ArrowDownAZIcon />
+                ) : (
+                  <ArrowUpAZIcon />
+                )}
+              </Button>
+            </div>
+            <div
+              className="w-full h-full bg-[rgba(73,141,185,0.2)] self-center rounded-full flex px-4 items-center justify-between"
+              hidden={selectedFileItems.length < 2}
+            >
+              <div className="flex items-center h-full gap-3">
+                <Button
+                  className="rounded-full h-[70%]"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setSelectedFileItems([]);
+                    setActiveFileItem(undefined);
+                  }}
+                >
+                  <XIcon />
+                </Button>
+                <p>{selectedFileItems.length} files selected</p>
+              </div>
+              {data && (
+                <MoveFileItemPopover
+                  onItemUpdate={() => {
+                    refetch();
+                    refetchParentFiles();
+                  }}
+                  trigger={
+                    <Button className="rounded-full h-[70%]" variant="outline">
+                      Move
+                      <FolderInputIcon />
+                    </Button>
+                  }
+                  parentFolder={data}
+                  selectedFileItems={selectedFileItems}
+                  onSuccess={() => {
+                    setSelectedFileItems([]);
+                    setActiveFileItem(undefined);
+                  }}
+                />
+              )}
+            </div>
+          </div>
           <div
             className="w-full h-full bg-secondary rounded-2xl p-3 flex flex-col gap-10 overflow-y-auto"
             onClick={() => {
@@ -159,68 +269,96 @@ export default function Homepage({ user }: { user: User }) {
               setSelectedFileItems([]);
             }}
           >
-            <ResponsiveGridWrapper minSize="15rem">
-              {data?.children &&
-                data.children
-                  .filter((item) => item.type === "folder")
-                  .map((item) => (
-                    <FolderCard
-                      fileItem={item}
-                      multipleSelectMode={multipleSelectMode}
-                      isActive={activeFileItem?.id === item.id}
-                      isSelected={
-                        !!selectedFileItems.find((file) => file.id === item.id)
-                      }
-                      onClick={(isSelected) => {
-                        const newSelectedFileItems = [
-                          ...selectedFileItems.filter(
-                            (element) => element.id !== item.id,
-                          ),
-                        ];
-                        if (!isSelected && multipleSelectMode) {
-                          newSelectedFileItems.push(item);
+            {data?.children && data.children.length > 0 ? (
+              <>
+                <ResponsiveGridWrapper minSize="15rem">
+                  {data.children
+                    .filter((item) => item.type === "folder")
+                    .map((item) => (
+                      <FolderCard
+                        user={user}
+                        onItemUpdate={() => {
+                          refetch();
+                          refetchParentFiles();
+                        }}
+                        fileItem={item}
+                        multipleSelectMode={multipleSelectMode}
+                        isActive={activeFileItem?.id === item.id}
+                        isSelected={
+                          !!selectedFileItems.find(
+                            (file) => file.id === item.id,
+                          )
                         }
-                        setSelectedFileItems(newSelectedFileItems);
+                        onClick={(isSelected) => {
+                          const newSelectedFileItems = [
+                            ...selectedFileItems.filter(
+                              (element) => element.id !== item.id,
+                            ),
+                          ];
+                          if (!isSelected && multipleSelectMode) {
+                            newSelectedFileItems.push(item);
+                          }
+                          setSelectedFileItems(newSelectedFileItems);
 
-                        if (!multipleSelectMode) {
-                          setSelectedFileItems([item]);
-                        }
-                        setActiveFileItem(item);
-                      }}
-                    />
-                  ))}
-            </ResponsiveGridWrapper>
-            <ResponsiveGridWrapper minSize="15rem">
-              {data?.children &&
-                data.children
-                  .filter((item) => item.type === "file")
-                  .map((item) => (
-                    <FileCard
-                      multipleSelectMode={multipleSelectMode}
-                      fileItem={item}
-                      isActive={activeFileItem?.id === item.id}
-                      isSelected={
-                        !!selectedFileItems.find((file) => file.id === item.id)
-                      }
-                      onClick={(isSelected) => {
-                        const newSelectedFileItems = [
-                          ...selectedFileItems.filter(
-                            (element) => element.id !== item.id,
-                          ),
-                        ];
-                        if (!isSelected && multipleSelectMode) {
-                          newSelectedFileItems.push(item);
-                        }
-                        setSelectedFileItems(newSelectedFileItems);
+                          if (!multipleSelectMode) {
+                            setSelectedFileItems([item]);
+                          }
+                          setActiveFileItem(item);
+                        }}
+                      />
+                    ))}
+                </ResponsiveGridWrapper>
+                <ResponsiveGridWrapper minSize="15rem">
+                  {data?.children &&
+                    data.children
+                      .filter((item) => item.type === "file")
+                      .map((item) => (
+                        <FileCard
+                          user={user}
+                          onItemUpdate={() => {
+                            refetch();
+                            refetchParentFiles();
+                          }}
+                          multipleSelectMode={multipleSelectMode}
+                          fileItem={item}
+                          isActive={activeFileItem?.id === item.id}
+                          isSelected={
+                            !!selectedFileItems.find(
+                              (file) => file.id === item.id,
+                            )
+                          }
+                          onClick={(isSelected) => {
+                            const newSelectedFileItems = [
+                              ...selectedFileItems.filter(
+                                (element) => element.id !== item.id,
+                              ),
+                            ];
+                            if (!isSelected && multipleSelectMode) {
+                              newSelectedFileItems.push(item);
+                            }
+                            setSelectedFileItems(newSelectedFileItems);
 
-                        if (!multipleSelectMode) {
-                          setSelectedFileItems([item]);
-                        }
-                        setActiveFileItem(item);
-                      }}
-                    />
-                  ))}
-            </ResponsiveGridWrapper>
+                            if (!multipleSelectMode) {
+                              setSelectedFileItems([item]);
+                            }
+                            setActiveFileItem(item);
+                          }}
+                        />
+                      ))}
+                </ResponsiveGridWrapper>
+              </>
+            ) : (
+              data && (
+                <Empty
+                  hasUploadButton
+                  parentFolderId={data.id}
+                  onItemUpdate={() => {
+                    refetch();
+                    refetchParentFiles();
+                  }}
+                />
+              )
+            )}
           </div>
         </div>
       </main>
