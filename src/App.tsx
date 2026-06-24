@@ -7,6 +7,7 @@ import FileItemDetailPage from "./pages/FileItemDetailPage";
 import Homepage from "./pages/Homepage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import SharedFilePage from "./pages/SharedFilePage";
 import type { User } from "./types";
 
 function App() {
@@ -41,6 +42,16 @@ function App() {
           }
         />
         <Route
+          path="/shared-files"
+          element={
+            <ProtectedRoute
+              onCheckSuccess={(authorizedUser) => setUser(authorizedUser)}
+            >
+              <SharedFilePage user={user as User} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/:id"
           element={
             <ProtectedRoute
@@ -56,7 +67,7 @@ function App() {
             <ProtectedRoute
               onCheckSuccess={(authorizedUser) => setUser(authorizedUser)}
             >
-              <FileItemDetailPage />
+              <FileItemDetailPage user={user as User} />
             </ProtectedRoute>
           }
         />
