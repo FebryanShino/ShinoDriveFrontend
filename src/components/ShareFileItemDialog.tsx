@@ -57,7 +57,7 @@ export default function ShareFileItemDialog(props: ShareFileItemDialogProps) {
       });
       props.onItemUpdate();
     } catch (e: any) {
-      alert(`Cannot find user with ${formData.email} email`);
+      return alert(`Cannot find user with ${formData.email} email`);
     }
     setIsDialogOpen(false);
   }

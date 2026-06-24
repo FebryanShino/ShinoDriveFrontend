@@ -1,6 +1,5 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -11,12 +10,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { API_URL, callAPI } from "@/config/api";
 import { setAccessToken } from "@/config/api/accessToken";
 import type { User } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -43,7 +43,7 @@ export default function LoginPage() {
       setAccessToken(response.access_token);
       navigate("/");
     } catch (error) {
-      console.log(error);
+      alert("Login failed");
     }
   }
   return (
