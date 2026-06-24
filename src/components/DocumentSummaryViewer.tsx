@@ -34,7 +34,7 @@ export default function DocumentSummaryViewer(
                   ? "w-40"
                   : "w-50"
                 : "w-14",
-              "h-14 overflow-hidden flex justify-start items-center",
+              "h-14 overflow-hidden flex justify-start items-center cursor-pointer",
               props.itemStatusIsSuccess ? "bg-primary" : "bg-amber-200",
             )}
             style={{
