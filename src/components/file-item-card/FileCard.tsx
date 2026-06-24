@@ -63,7 +63,7 @@ export default function FileCard(props: FileCardInterface) {
       </CardHeader>
       <CardContent className="px-3 h-full">
         <div
-          className=" w-full h-full rounded flex justify-center items-center bg-full bg-cover bg-top"
+          className=" w-full h-full rounded flex justify-center items-center bg-full bg-cover bg-center"
           style={{
             backgroundColor: `rgb(${hashToRGB(props.fileItem.extension?.replace(".", "") as string).join(",")})`,
             backgroundImage: `url("${API_URL}/file/${props.fileItem.id}")`,
