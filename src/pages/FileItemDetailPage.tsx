@@ -39,6 +39,7 @@ import {
   DownloadIcon,
   ImageIcon,
   InfoIcon,
+  Loader2Icon,
   MinusIcon,
   PenIcon,
   PlusIcon,
@@ -405,35 +406,44 @@ export default function FileItemDetailPage({ user }: { user: User }) {
               </Card>
             </>
           )}
-          {file.item_metadata &&
-            file.item_metadata.content != "" &&
-            file.item_metadata.content != null &&
-            isImageFile(file.extension as string) && (
-              <>
-                <Separator />
-                <Card className="bg-transparent border-none">
-                  <CardHeader className="px-3 font-semibold text-lg">
-                    Image tags
-                  </CardHeader>
-                  <CardContent className="px-3 flex flex-wrap gap-2">
-                    {file.item_metadata.content.split(", ").map((tag) => (
+          {isImageFile(file.extension as string) && (
+            <>
+              <Separator />
+              <Card className="bg-transparent border-none">
+                <CardHeader className="px-3 font-semibold text-lg">
+                  Image tags
+                </CardHeader>
+                <CardContent className="px-3 flex flex-wrap gap-2">
+                  {file.item_metadata &&
+                  file.item_metadata.content != "" &&
+                  file.item_metadata.content != null ? (
+                    file.item_metadata.content.split(", ").map((tag) => (
                       <Button variant="outline" size="sm">
                         {tag}
                       </Button>
-                    ))}
-                  </CardContent>
-                </Card>
-              </>
-            )}
+                    ))
+                  ) : (
+                    <Button disabled size="lg" variant="outline">
+                      <Loader2Icon className="animate-spin" />
+                      Generating Tags...
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          )}
           <Separator />
           <Card className="bg-transparent border-none">
             <CardHeader className="px-3 font-semibold text-lg">
               File details
             </CardHeader>
-            <CardContent className="px-3 gap-6 flex flex-col">
-              <div className="leading-5">
+            <CardContent className="px-3 gap-6 flex flex-col w-full">
+              <div className="leading-5 w-full">
                 <h4 className="font-bold text-xs">Name</h4>
-                <p className="font-light">{file.name}</p>
+                <p className="font-light break-words">
+                  {file.name}
+                  {file.extension}
+                </p>
               </div>
               {file.item_metadata && (
                 <div className="leading-5">
