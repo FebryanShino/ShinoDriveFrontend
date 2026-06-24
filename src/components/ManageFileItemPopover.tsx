@@ -161,7 +161,9 @@ const ManageFileItemPopover = forwardRef<
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell>:</TableCell>
-              <TableCell>{props.fileItem.name}</TableCell>
+              <TableCell className="break-words">
+                {props.fileItem.name}
+              </TableCell>
             </TableRow>
             {props.fileItem.type === "file" && (
               <TableRow>
@@ -178,12 +180,16 @@ const ManageFileItemPopover = forwardRef<
             <TableRow>
               <TableCell>Created At</TableCell>
               <TableCell>:</TableCell>
-              <TableCell>{props.fileItem.created_at}</TableCell>
+              <TableCell>
+                {new Date(props.fileItem.updated_at).toLocaleString("en-UK")}
+              </TableCell>
             </TableRow>
             <TableRow>
               <TableCell>Updated At</TableCell>
               <TableCell>:</TableCell>
-              <TableCell>{props.fileItem.updated_at}</TableCell>
+              <TableCell>
+                {new Date(props.fileItem.updated_at).toLocaleString("en-UK")}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
