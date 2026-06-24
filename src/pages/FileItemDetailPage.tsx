@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Menubar,
   MenubarContent,
-  MenubarGroup,
   MenubarItem,
   MenubarMenu,
   MenubarSeparator,
@@ -221,26 +220,6 @@ export default function FileItemDetailPage({ user }: { user: User }) {
                         <InfoIcon />
                         Properties
                       </MenubarItem>
-                    </MenubarContent>
-                  </MenubarMenu>
-                  <MenubarMenu>
-                    <MenubarTrigger>More</MenubarTrigger>
-                    <MenubarContent>
-                      <MenubarGroup>
-                        <MenubarItem>
-                          {/* <SettingsIcon /> */}
-                          Settings
-                        </MenubarItem>
-                        <MenubarItem>
-                          {/* <HelpCircleIcon /> */}
-                          Help
-                        </MenubarItem>
-                        <MenubarSeparator />
-                        <MenubarItem variant="destructive">
-                          {/* <TrashIcon /> */}
-                          Delete
-                        </MenubarItem>
-                      </MenubarGroup>
                     </MenubarContent>
                   </MenubarMenu>
                 </Menubar>
