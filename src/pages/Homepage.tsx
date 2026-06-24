@@ -1,5 +1,6 @@
 import AddFileButton from "@/components/AddFileButton";
 import AppSidebar from "@/components/AppSidebar";
+import DeleteFileItemModal from "@/components/DeleteFileItemModal";
 import Empty from "@/components/Empty";
 import FileCard from "@/components/file-item-card/FileCard";
 import FolderCard from "@/components/file-item-card/FolderCard";
@@ -36,6 +37,7 @@ import {
   HomeIcon,
   PlusIcon,
   SearchIcon,
+  Trash2Icon,
   XIcon,
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
@@ -241,24 +243,45 @@ export default function Homepage({ user }: { user: User }) {
                 <p>{selectedFileItems.length} files selected</p>
               </div>
               {data && (
-                <MoveFileItemPopover
-                  onItemUpdate={() => {
-                    refetch();
-                    refetchParentFiles();
-                  }}
-                  trigger={
-                    <Button className="rounded-full h-[70%]" variant="outline">
-                      Move
-                      <FolderInputIcon />
-                    </Button>
-                  }
-                  parentFolder={data}
-                  selectedFileItems={selectedFileItems}
-                  onSuccess={() => {
-                    setSelectedFileItems([]);
-                    setActiveFileItem(undefined);
-                  }}
-                />
+                <div className="flex self-start gap-2 h-full w-auto items-center">
+                  <DeleteFileItemModal
+                    trigger={
+                      <Button
+                        className="rounded-full h-[70%] border-red-800 text-red-800"
+                        variant="outline"
+                      >
+                        Delete
+                        <Trash2Icon />
+                      </Button>
+                    }
+                    onItemUpdate={() => {
+                      refetch();
+                      refetchParentFiles();
+                    }}
+                    selectedFileItems={selectedFileItems}
+                  />
+                  <MoveFileItemPopover
+                    onItemUpdate={() => {
+                      refetch();
+                      refetchParentFiles();
+                    }}
+                    trigger={
+                      <Button
+                        className="rounded-full h-[70%]"
+                        variant="outline"
+                      >
+                        Move
+                        <FolderInputIcon />
+                      </Button>
+                    }
+                    parentFolder={data}
+                    selectedFileItems={selectedFileItems}
+                    onSuccess={() => {
+                      setSelectedFileItems([]);
+                      setActiveFileItem(undefined);
+                    }}
+                  />
+                </div>
               )}
             </div>
           </div>
