@@ -1,12 +1,21 @@
 import { PopoverTrigger } from "@radix-ui/react-popover";
-import { EllipsisVerticalIcon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  FolderInputIcon,
+  PenIcon,
+  Share2Icon,
+  TrashIcon,
+} from "lucide-react";
 import { forwardRef, useImperativeHandle, useState } from "react";
 
 import { Button } from "./ui/button";
 import { Popover, PopoverContent } from "./ui/popover";
 import { Table, TableBody, TableCell, TableRow } from "./ui/table";
 
-import type { FileItem } from "@/types";
+import type { Contribution, FileItem, User } from "@/types";
+import DeleteFileItemModal from "./DeleteFileItemModal";
+import MoveFileItemPopover from "./MoveFileItemPopover";
+import ShareFileItemDialog from "./ShareFileItemDialog";
 import UpdateFileModal from "./UpdateFileModal";
 
 export interface ManageFileItemPopoverHandle {
@@ -14,7 +23,9 @@ export interface ManageFileItemPopoverHandle {
 }
 
 interface ManageFileItemPopoverProps {
+  user: User;
   fileItem: FileItem;
+  onItemUpdate: () => void;
 }
 
 const ManageFileItemPopover = forwardRef<
@@ -28,6 +39,19 @@ const ManageFileItemPopover = forwardRef<
       setIsPopoverOpen(true);
     },
   }));
+
+  function checkUserRole(
+    user: User,
+    contributors: Contribution[],
+    roles: string[],
+  ): boolean {
+    const userContribution = contributors.find(
+      (contribution) => contribution.user.id === user.id,
+    );
+    if (!userContribution) return false;
+
+    return roles.includes(userContribution.role);
+  }
 
   return (
     <Popover
@@ -55,18 +79,82 @@ const ManageFileItemPopover = forwardRef<
         }}
       >
         <div className="flex">
-          <UpdateFileModal fileItem={props.fileItem} />
-          {/* <DeleteFIleItemModal fileItem={props.fileItem} /> */}
-          {/* <MoveFileItemPopover
-            trigger={
-              <Button size="icon" className="cursor-pointer" variant="ghost">
-                <FolderInputIcon />
-              </Button>
-            }
-            onSuccess={() => ""}
-            parentFolder={props.fileItem.parent as FileItem}
-            selectedFileItems={[props.fileItem]}
-          /> */}
+          {checkUserRole(props.user, props.fileItem.contributors, [
+            "owner",
+            "editor",
+          ]) && (
+            <UpdateFileModal
+              trigger={
+                <Button size="icon" className="cursor-pointer" variant="ghost">
+                  <PenIcon />
+                </Button>
+              }
+              fileItem={props.fileItem}
+              onItemUpdate={() => {
+                setIsPopoverOpen(false);
+                props.onItemUpdate();
+              }}
+            />
+          )}
+          {checkUserRole(props.user, props.fileItem.contributors, [
+            "owner",
+          ]) && (
+            <>
+              <MoveFileItemPopover
+                trigger={
+                  <Button
+                    size="icon"
+                    className="cursor-pointer"
+                    variant="ghost"
+                  >
+                    <FolderInputIcon />
+                  </Button>
+                }
+                onSuccess={() => ""}
+                onItemUpdate={() => {
+                  setIsPopoverOpen(false);
+                  props.onItemUpdate();
+                }}
+                parentFolder={props.fileItem.parent as FileItem}
+                selectedFileItems={[props.fileItem]}
+              />
+              <DeleteFileItemModal
+                trigger={
+                  <Button
+                    size="icon"
+                    className="cursor-pointer"
+                    variant="ghost"
+                  >
+                    <TrashIcon />
+                  </Button>
+                }
+                selectedFileItems={[props.fileItem]}
+                onItemUpdate={() => {
+                  setIsPopoverOpen(false);
+                  props.onItemUpdate();
+                }}
+              />
+              {props.fileItem.type === "file" && (
+                <ShareFileItemDialog
+                  item={props.fileItem}
+                  onDialogClose={() => setIsPopoverOpen(false)}
+                  onItemUpdate={() => {
+                    setIsPopoverOpen(false);
+                    props.onItemUpdate();
+                  }}
+                  trigger={
+                    <Button
+                      size="icon"
+                      className="cursor-pointer"
+                      variant="ghost"
+                    >
+                      <Share2Icon />
+                    </Button>
+                  }
+                />
+              )}
+            </>
+          )}
         </div>
         <Table>
           <TableBody>

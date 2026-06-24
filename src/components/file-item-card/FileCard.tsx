@@ -1,7 +1,7 @@
 import { API_URL } from "@/config/api";
 import { IMAGE_TYPES } from "@/constants";
 import { cn } from "@/lib/utils";
-import type { FileItem } from "@/types";
+import type { FileItem, User } from "@/types";
 import { hashToRGB } from "@/utils/misc";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,11 +10,13 @@ import ManageFileItemPopover from "../ManageFileItemPopover";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface FileCardInterface {
+  user: User;
   fileItem: FileItem;
   isActive?: boolean;
   isSelected?: boolean;
   multipleSelectMode: boolean;
   onClick: (isSelected: boolean) => void;
+  onItemUpdate: () => void;
 }
 
 export default function FileCard(props: FileCardInterface) {
@@ -52,14 +54,16 @@ export default function FileCard(props: FileCardInterface) {
             </p>
           </div>
           <ManageFileItemPopover
+            user={props.user}
             ref={manageFileItemPopoverRef}
             fileItem={props.fileItem}
+            onItemUpdate={props.onItemUpdate}
           />
         </CardTitle>
       </CardHeader>
       <CardContent className="px-3 h-full">
         <div
-          className=" w-full h-full rounded flex justify-center items-center bg-full bg-cover bg-center"
+          className=" w-full h-full rounded flex justify-center items-center bg-full bg-cover bg-top"
           style={{
             backgroundColor: `rgb(${hashToRGB(props.fileItem.extension?.replace(".", "") as string).join(",")})`,
             backgroundImage: `url("${API_URL}/file/${props.fileItem.id}")`,

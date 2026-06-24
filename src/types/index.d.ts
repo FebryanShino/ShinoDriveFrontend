@@ -5,6 +5,8 @@ export interface FileItem {
   name: string;
   extension: string | null;
   parent_id: string | null;
+  summary: string;
+  status: "failed" | "pending" | "success";
   created_at: string;
   updated_at: string;
   user: User;
@@ -12,6 +14,7 @@ export interface FileItem {
   children?: this[];
   parent?: this;
   item_metadata?: ItemMetadata;
+  contributors: Contribution[];
 }
 
 export interface User {
@@ -23,6 +26,7 @@ export interface User {
 export interface ItemMetadata {
   image_url: string | null;
   content: string;
+  size: number;
 }
 
 export interface ActivityLog {
@@ -33,4 +37,9 @@ export interface ActivityLog {
   description: string | null;
   author: User;
   created_at: string;
+}
+
+export interface Contribution {
+  role: "owner" | "editor" | "viewer";
+  user: User;
 }

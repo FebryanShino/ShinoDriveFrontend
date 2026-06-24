@@ -1,6 +1,6 @@
 interface CallAPIProps {
   url: string;
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   data?: any;
   authToken?: string;
 }

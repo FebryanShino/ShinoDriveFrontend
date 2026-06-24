@@ -1,4 +1,9 @@
+import { API_URL, callAPI } from "@/config/api";
+import { getAccessToken } from "@/config/api/accessToken";
+import { cn } from "@/lib/utils";
+import type { FileItem } from "@/types";
 import { useState, type FormEvent, type ReactNode } from "react";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
@@ -6,16 +11,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { API_URL, callAPI } from "@/config/api";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { getAccessToken } from "@/config/api/accessToken";
+import { Label } from "./ui/label";
 
 interface CreateFolderButtonProps {
+  itemsOnTheSameDir: FileItem[];
   triggerButton: ReactNode;
   parentFolderId: string;
   onSubmitFinished?: () => void;
+}
+
+function checkIfDuplicate(input: string, items: FileItem[]): boolean {
+  if (!items) return false;
+
+  return (
+    items.find((item) => item.name === input && item.type === "folder") !==
+    undefined
+  );
 }
 
 export default function CreateFolderButton(props: CreateFolderButtonProps) {
@@ -50,6 +62,14 @@ export default function CreateFolderButton(props: CreateFolderButtonProps) {
             <Label>Folder name</Label>
             <div className="flex gap-2">
               <Input
+                className={cn(
+                  checkIfDuplicate(
+                    createFolderFormData.name,
+                    props.itemsOnTheSameDir,
+                  )
+                    ? "border-red-500"
+                    : "",
+                )}
                 defaultValue={createFolderFormData.name}
                 onChange={(e) =>
                   setCreateFolderFormData({
@@ -58,8 +78,24 @@ export default function CreateFolderButton(props: CreateFolderButtonProps) {
                   })
                 }
               />
-              <Button onClick={() => setIsDialogOpen(false)}>Create</Button>
+              <Button
+                onClick={() => setIsDialogOpen(false)}
+                disabled={checkIfDuplicate(
+                  createFolderFormData.name,
+                  props.itemsOnTheSameDir,
+                )}
+              >
+                Create
+              </Button>
             </div>
+            <Label className="mt-2 text-xs h-4">
+              {checkIfDuplicate(
+                createFolderFormData.name,
+                props.itemsOnTheSameDir,
+              )
+                ? "*Folder already exists"
+                : ""}
+            </Label>
           </form>
         </DialogHeader>
       </DialogContent>

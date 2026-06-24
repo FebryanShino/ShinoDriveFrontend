@@ -39,3 +39,23 @@ export function getAspectRatio(width: number, height: number): AspectRatio {
     decimal: width / height,
   };
 }
+
+export function isImageFile(extension: string): boolean {
+  const IMAGE_EXTENSIONS = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".bmp",
+    ".webp",
+    ".tiff",
+    ".tif",
+    ".svg",
+    ".ico",
+    ".avif",
+    ".heic",
+    ".heif",
+  ];
+
+  return IMAGE_EXTENSIONS.includes(extension);
+}

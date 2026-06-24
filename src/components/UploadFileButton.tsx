@@ -1,3 +1,7 @@
+import { API_URL, callAPI } from "@/config/api";
+import { getAccessToken } from "@/config/api/accessToken";
+import { cn } from "@/lib/utils";
+import type { FileItem } from "@/types";
 import {
   useState,
   type ChangeEvent,
@@ -5,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +17,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { API_URL, callAPI } from "@/config/api";
-import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { Card, CardContent } from "./ui/card";
+import { Label } from "./ui/label";
 import {
   Table,
   TableBody,
@@ -23,14 +26,11 @@ import {
   TableCell,
   TableRow,
 } from "./ui/table";
-import type { FileItem } from "@/types";
-import { cn } from "@/lib/utils";
-import { getAccessToken } from "@/config/api/accessToken";
 
 interface UploadFileButtonProps {
   triggerButton: ReactNode;
   parentFolderId: string;
-  filesOnTheSameDir: FileItem[];
+  itemsOnTheSameDir: FileItem[];
   onSubmitFinished?: () => void;
 }
 
@@ -64,7 +64,7 @@ export default function UploadFileButton(props: UploadFileButtonProps) {
     if (props.onSubmitFinished) props.onSubmitFinished();
   }
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = (event.target.files as FileList)[0];
     if (file) {
       const nameOnly =
@@ -84,9 +84,26 @@ export default function UploadFileButton(props: UploadFileButtonProps) {
       };
       reader.readAsDataURL(file);
     }
-  };
+  }
+
+  function checkIfDuplicate(input: string, items: FileItem[]): boolean {
+    if (!items) return false;
+
+    return (
+      items.find((item) => item.name === input && item.type === "file") !==
+      undefined
+    );
+  }
   return (
-    <Dialog onOpenChange={(open) => setIsDialogOpen(open)} open={isDialogOpen}>
+    <Dialog
+      onOpenChange={(open) => {
+        setIsDialogOpen(open);
+        if (!open) {
+          setFileInfo(null);
+        }
+      }}
+      open={isDialogOpen}
+    >
       <DialogTrigger asChild>{props.triggerButton}</DialogTrigger>
       <DialogContent className="w-full">
         <DialogHeader className="w-full">
@@ -147,11 +164,12 @@ export default function UploadFileButton(props: UploadFileButtonProps) {
                   <Label>Change Name</Label>
                   <Input
                     className={cn(
-                      props.filesOnTheSameDir?.find(
-                        (item) => item.name === createFileFormData.name
+                      checkIfDuplicate(
+                        createFileFormData.name,
+                        props.itemsOnTheSameDir,
                       )
                         ? "border-red-500"
-                        : ""
+                        : "",
                     )}
                     value={createFileFormData.name}
                     onChange={(e) =>
@@ -169,17 +187,17 @@ export default function UploadFileButton(props: UploadFileButtonProps) {
               <Button
                 size="lg"
                 onClick={() => setIsDialogOpen(false)}
-                disabled={
-                  !!props.filesOnTheSameDir.find(
-                    (item) => item.name === createFileFormData.name
-                  )
-                }
+                disabled={checkIfDuplicate(
+                  createFileFormData.name,
+                  props.itemsOnTheSameDir,
+                )}
               >
                 Create
               </Button>
               <Label className="mt-2 text-xs h-4">
-                {props.filesOnTheSameDir.find(
-                  (item) => item.name === createFileFormData.name
+                {checkIfDuplicate(
+                  createFileFormData.name,
+                  props.itemsOnTheSameDir,
                 )
                   ? "*File already exists"
                   : ""}

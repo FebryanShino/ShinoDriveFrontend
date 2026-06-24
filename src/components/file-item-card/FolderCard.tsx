@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { FileItem } from "@/types";
+import type { FileItem, User } from "@/types";
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ManageFileItemPopover, {
@@ -8,11 +8,13 @@ import ManageFileItemPopover, {
 import { Card, CardHeader, CardTitle } from "../ui/card";
 
 interface FolderCardInterface {
+  user: User;
   fileItem: FileItem;
   isActive?: boolean;
   isSelected?: boolean;
   multipleSelectMode: boolean;
   onClick: (isSelected: boolean) => void;
+  onItemUpdate: () => void;
 }
 
 export default function FolderCard(props: FolderCardInterface) {
@@ -47,8 +49,10 @@ export default function FolderCard(props: FolderCardInterface) {
               <p className=" truncate w-44 h-5">{props.fileItem.name}</p>
             </div>
             <ManageFileItemPopover
+              user={props.user}
               ref={manageFileItemPopoverRef}
               fileItem={props.fileItem}
+              onItemUpdate={props.onItemUpdate}
             />
           </CardTitle>
         </CardHeader>

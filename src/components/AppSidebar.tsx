@@ -37,7 +37,7 @@ function RenderSidebarSubItem({
     <SidebarMenuSubItem key={item.id}>
       <SidebarMenuSubButton asChild isActive={isActive}>
         <Link
-          to={(item.type === "folder" ? "/" : `${API_URL}/file/`) + item.id}
+          to={item.type === "folder" ? `/${item.id}` : `/${item.id}/detail`}
         >
           {item.type === "folder" ? <FolderIcon /> : <FileIcon />}
           <span className="truncate w-full">
@@ -63,7 +63,9 @@ function RenderSidebarItem({
         <Link
           to={
             item.parent_id
-              ? (item.type === "folder" ? "/" : `${API_URL}/file/`) + item.id
+              ? item.type === "folder"
+                ? `/${item.id}`
+                : `/${item.id}/detail`
               : "/"
           }
         >
@@ -165,7 +167,21 @@ export default function AppSidebar(props: AppSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup />
+        <SidebarGroup className="mt-auto">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={props.activeItemId === "shared-files"}
+              >
+                <Link to="/shared-files">
+                  <FolderIcon />
+                  <span className="truncate w-full">Shared to you</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
 
       {props.user && (
