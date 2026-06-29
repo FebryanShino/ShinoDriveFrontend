@@ -190,8 +190,14 @@ export default function AppSidebar(props: AppSidebarProps) {
             <SidebarMenuItem>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton>
-                    <User2 /> {props.user.username}
+                  <SidebarMenuButton className="h-16">
+                    <User2 />
+                    <div>
+                      <h6 className="text-sm font-semibold">
+                        {props.user.username}
+                      </h6>
+                      <p className="text-xs">{props.user.email}</p>
+                    </div>
                     <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
