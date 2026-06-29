@@ -1,7 +1,8 @@
 import { API_URL, callAPI } from "@/config/api";
 import { getAccessToken } from "@/config/api/accessToken";
-import type { FileItem } from "@/types";
+import type { Contribution, FileItem } from "@/types";
 import { useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
@@ -49,17 +50,20 @@ export default function ShareFileItemDialog(props: ShareFileItemDialogProps) {
   });
   async function handleShareFileSubmit() {
     try {
-      await callAPI({
+      const response = await callAPI<Contribution>({
         url: `${API_URL}/share-item-access`,
         method: "POST",
         data: formData,
         authToken: getAccessToken() as string,
       });
       props.onItemUpdate();
+      toast.success(`Shared "${props.item.name}${props.item.extension}"`, {
+        description: `To ${response.user.username}`,
+      });
+      setIsDialogOpen(false);
     } catch (e: any) {
       return alert(`Cannot find user with ${formData.email} email`);
     }
-    setIsDialogOpen(false);
   }
   return (
     <Dialog
